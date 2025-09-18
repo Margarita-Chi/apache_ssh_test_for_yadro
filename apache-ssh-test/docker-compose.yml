@@ -1,0 +1,30 @@
+services:
+  target:
+    build: ./target
+    container_name: apache-ssh-test-target
+    ports:
+      - "8080:80"
+      - "2222:22"
+    restart: unless-stopped
+    environment:
+      SSH_USER: tester
+      SSH_PASSWORD: testerpass
+
+  agent:
+    build: ./agent
+    container_name: apache-ssh-test-agent
+    depends_on:
+      - target
+    environment:
+      LOG_CHECK_MINUTES: 5
+      EXPECTED_INDEX_TEXT: "Hello from Apache"
+      EXPECTED_404_TEXT: "Not Found"
+      TARGET_HOST: target
+      SSH_USER: tester
+      SSH_PASSWORD: testerpass
+      SSH_PORT: 22
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-report:/app/allure-report
+    user: "${UID}:${GID}"  
+
